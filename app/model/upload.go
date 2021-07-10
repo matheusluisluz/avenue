@@ -9,3 +9,8 @@ type Upload struct {
 	ReqId    string
 	Headers  multipart.File
 }
+
+type UploadResponse struct {
+	Success bool   `json:"success"`
+	Id      string `json:"id"`
+}
