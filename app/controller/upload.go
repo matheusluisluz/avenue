@@ -25,6 +25,7 @@ func Execute(service service.IService) *UploadController {
 
 func (controller *UploadController) Upload(c *gin.Context) {
 	file, err := c.FormFile("file")
+	fmt.Sprintln("get form err: ", file)
 	if err != nil {
 		c.String(http.StatusBadRequest, fmt.Sprintf("get form err: %s", err.Error()))
 		return
