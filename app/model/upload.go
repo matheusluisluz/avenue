@@ -1,13 +1,13 @@
 package model
 
-import "mime/multipart"
+import "net/textproto"
 
 type Upload struct {
 	ID       string
 	FileName string
 	Path     string
 	ReqId    string
-	Headers  multipart.File
+	Headers  textproto.MIMEHeader
 }
 
 type UploadResponse struct {

@@ -6,8 +6,6 @@ import (
 	"avenue/app/service"
 	"fmt"
 	"io/ioutil"
-	"net/http"
-	"path/filepath"
 
 	"github.com/gin-gonic/gin"
 )
@@ -43,22 +41,6 @@ func PostHomePage(c *gin.Context) {
 	})
 }
 
-func UploadTest(c *gin.Context) {
-	file, err := c.FormFile("file")
-	if err != nil {
-		c.String(http.StatusBadRequest, fmt.Sprintf("get form err: %s", err.Error()))
-		return
-	}
-
-	filename := filepath.Base(file.Filename)
-	if err := c.SaveUploadedFile(file, filename); err != nil {
-		c.String(http.StatusBadRequest, fmt.Sprintf("upload file err: %s", err.Error()))
-		return
-	}
-
-	c.String(http.StatusOK, fmt.Sprintf("File %s uploaded successfully", file.Filename))
-}
-
 func HomePage(c *gin.Context) {
 	c.JSON(200, gin.H{
 		"message": "Hello World",
@@ -78,9 +60,6 @@ func main() {
 	controller := controller.Execute(service)
 
 	router := gin.Default()
-
-	router.MaxMultipartMemory = 8 << 20
-	router.POST("/test-upload", UploadTest)
 
 	controller.Routes(router)
 
