@@ -1,6 +1,9 @@
 package main
 
 import (
+	"avenue/app/controller"
+	"avenue/app/repository"
+	"avenue/app/service"
 	"fmt"
 	"io/ioutil"
 
@@ -47,15 +50,18 @@ func HomePage(c *gin.Context) {
 func main() {
 	fmt.Println("Hello World")
 
-	router := gin.Default()
 	// router.GET("/", HomePage)
 	// router.POST("/", PostHomePage)
 	// router.GET("/query", QueryString)
 	// router.GET("/path/:name/:age", PathParams)
 
-	// repository.Execute()
-	// service.Execute()
-	// controller.Execute()
+	repository := repository.Execute()
+	service := service.Execute(repository)
+	controller := controller.Execute(service)
+
+	router := gin.Default()
+
+	controller.Routes(router)
 
 	if err := router.Run(); err != nil {
 		panic(err)

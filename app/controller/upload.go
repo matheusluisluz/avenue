@@ -12,10 +12,10 @@ import (
 )
 
 type UploadController struct {
-	service service.UploadService
+	service service.IService
 }
 
-func Execute(service service.UploadService) *UploadController {
+func Execute(service service.IService) *UploadController {
 	controller := &UploadController{
 		service: service,
 	}
@@ -44,7 +44,6 @@ func (controller *UploadController) Upload(c *gin.Context) {
 		ReqId:    id,
 	}
 
-	//chamar o service passando o request da requisicao e o objeto da requisicao
 	reponse, err := controller.service.Upload(c.Request.Context(), domain)
 
 	if err != nil {

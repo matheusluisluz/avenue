@@ -9,15 +9,15 @@ import (
 	"github.com/google/uuid"
 )
 
-type Service interface {
-	Upload(ctx context.Context, upload *model.Upload) (string, error)
+type IService interface {
+	Upload(ctx context.Context, upload *model.Upload) (*repository.RepositoryResponse, error)
 }
 
 type UploadService struct {
-	repository repository.Repository
+	repository repository.IRepository
 }
 
-func Execute(repository repository.Repository) *UploadService {
+func Execute(repository repository.IRepository) IService {
 	service := &UploadService{
 		repository: repository,
 	}
@@ -25,7 +25,7 @@ func Execute(repository repository.Repository) *UploadService {
 	return service
 }
 
-func (service *UploadService) Upload(ctx context.Context, upload *model.Upload) (repository.RepositoryResponse, error) {
+func (service *UploadService) Upload(ctx context.Context, upload *model.Upload) (*repository.RepositoryResponse, error) {
 	location := fmt.Sprintf("%s-%s", uuid.New().String(), upload.FileName)
 	RepositoryResponse, err := service.repository.Upload(ctx, &model.Upload{
 		Path:     location,

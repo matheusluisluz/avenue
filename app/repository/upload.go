@@ -13,10 +13,8 @@ type RepositoryResponse struct {
 	Id      string `json:"id"`
 }
 
-//TODO AWS S3 PutObject
-
-type Repository interface {
-	Upload(ctx context.Context, file *model.Upload) (RepositoryResponse, error)
+type IRepository interface {
+	Upload(ctx context.Context, file *model.Upload) (*RepositoryResponse, error)
 }
 
 type UploadRepository struct {
@@ -29,10 +27,15 @@ func Execute() *UploadRepository {
 	}
 }
 
-func (repository *UploadRepository) Upload(ctx context.Context, file *model.Upload) (string, error) {
+func (repository *UploadRepository) Upload(ctx context.Context, file *model.Upload) (*RepositoryResponse, error) {
 	file.ID = uuid.New().String()
 
 	repository.store.Store(file.ID, file)
 
-	return file.ID, nil
+	response := &RepositoryResponse{
+		Success: true,
+		Id:      file.ID,
+	}
+
+	return response, nil
 }
