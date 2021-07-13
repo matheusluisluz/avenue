@@ -1,11 +1,12 @@
 package repository
 
 import (
-	"avenue/app/model"
 	"context"
+	"errors"
+	"fmt"
 	"sync"
 
-	"github.com/google/uuid"
+	"avenue/app/model"
 )
 
 type RepositoryResponse struct {
@@ -15,6 +16,7 @@ type RepositoryResponse struct {
 
 type IRepository interface {
 	Upload(ctx context.Context, file *model.Upload) (*RepositoryResponse, error)
+	Read(read *model.Chunk) (*model.Upload, error)
 }
 
 type UploadRepository struct {
@@ -28,8 +30,8 @@ func Execute() *UploadRepository {
 }
 
 func (repository *UploadRepository) Upload(ctx context.Context, file *model.Upload) (*RepositoryResponse, error) {
-	file.ID = uuid.New().String()
-
+	fmt.Println("file.ID: ", file.ID)
+	fmt.Println("file: ", file)
 	repository.store.Store(file.ID, file)
 
 	response := &RepositoryResponse{
@@ -38,4 +40,15 @@ func (repository *UploadRepository) Upload(ctx context.Context, file *model.Uplo
 	}
 
 	return response, nil
+}
+
+func (repository *UploadRepository) Read(read *model.Chunk) (*model.Upload, error) {
+	fmt.Println("read.UploadID: ", read.UploadID)
+	file, ok := repository.store.Load(read.UploadID)
+	fmt.Println("file: ", file)
+	if !ok {
+		return nil, errors.New("File Not Found !!!")
+	}
+
+	return file.(*model.Upload), nil
 }

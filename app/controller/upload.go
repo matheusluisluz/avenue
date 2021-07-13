@@ -3,13 +3,14 @@ package controller
 import (
 	"fmt"
 	"net/http"
+	"os"
+	"strconv"
+
+	"github.com/gin-gonic/gin"
 
 	"avenue/app/model"
 	"avenue/app/repository"
 	"avenue/app/service"
-
-	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 )
 
 type UploadController struct {
@@ -32,18 +33,17 @@ func (controller *UploadController) Upload(c *gin.Context) {
 		return
 	}
 
-	// headers, err := file.Open()
-	// if err != nil {
-	// 	c.String(http.StatusBadRequest, fmt.Sprintf("get form err: %s", err.Error()))
-	// 	return
-	// }
+	headers, err := os.Open(file.Filename)
+	if err != nil {
+		c.String(http.StatusBadRequest, fmt.Sprintf("get form err: %s", err.Error()))
+		return
+	}
 
-	id := uuid.New().String()
+	// id := uuid.New().String()
 
 	domain := &model.Upload{
-		Headers:  file.Header,
+		File:     headers,
 		FileName: file.Filename,
-		ReqId:    id,
 	}
 
 	reponse, err := controller.service.Upload(c.Request.Context(), domain)
@@ -66,12 +66,19 @@ func (controller *UploadController) UploadTest(c *gin.Context) {
 		return
 	}
 
+	headers, err := file.Open()
+	if err != nil {
+		c.String(http.StatusBadRequest, fmt.Sprintf("get form err: %s", err.Error()))
+		return
+	}
+	defer headers.Close()
+
 	upload := &model.Upload{
-		Headers:  file.Header,
 		FileName: file.Filename,
+		File:     headers,
 	}
 
-	reponse, err := controller.service.UploadTest(file, c, upload)
+	reponse, err := controller.service.UploadTest(c, upload)
 
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
@@ -86,9 +93,39 @@ func (controller *UploadController) UploadTest(c *gin.Context) {
 	)
 }
 
+func (controller *UploadController) ReadTest(c *gin.Context) {
+	offset, _ := strconv.ParseInt(c.Query("offset"), 10, 64)
+	limit, _ := strconv.ParseInt(c.Query("limit"), 10, 64)
+	chunk := &model.Chunk{
+		UploadID: c.Query("id"),
+		Offset:   offset,
+		Limit:    limit,
+	}
+	fmt.Println("chunk: ", chunk)
+	if err := c.BindQuery(chunk); err != nil {
+		c.Status(http.StatusBadRequest)
+		return
+	}
+
+	reponse, err := controller.service.Read(chunk)
+
+	if err != nil {
+		c.Status(http.StatusInternalServerError)
+		fmt.Println("controller.service.Read: ", err)
+		return
+	}
+
+	fmt.Println("File read successfully: ", reponse)
+	c.JSON(
+		http.StatusOK,
+		reponse,
+	)
+}
+
 func (controller *UploadController) Routes(engine *gin.Engine) {
 	engine.MaxMultipartMemory = 8 << 20
 	engine.POST("/test-upload", controller.UploadTest)
+	engine.GET("/test-upload", controller.ReadTest)
 
 	upload := engine.Group("upload")
 	upload.POST("/", controller.Upload)

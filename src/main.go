@@ -1,13 +1,14 @@
 package main
 
 import (
-	"avenue/app/controller"
-	"avenue/app/repository"
-	"avenue/app/service"
 	"fmt"
 	"io/ioutil"
 
 	"github.com/gin-gonic/gin"
+
+	"avenue/app/controller"
+	"avenue/app/repository"
+	"avenue/app/service"
 )
 
 func PathParams(c *gin.Context) {
