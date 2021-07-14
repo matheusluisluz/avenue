@@ -15,7 +15,7 @@ import (
 type IService interface {
 	Upload(ctx context.Context, upload *model.Upload) (*repository.RepositoryResponse, error)
 	UploadTest(c *gin.Context, upload *model.Upload) (*repository.RepositoryResponse, error)
-	Read(read *model.Chunk) (string, error)
+	Read(read *model.Chunk) (repository.RepositoryResponse, error)
 }
 
 type UploadService struct {
@@ -59,8 +59,11 @@ func (service *UploadService) UploadTest(c *gin.Context, upload *model.Upload) (
 	return RepositoryResponse, err
 }
 
-func (service *UploadService) Read(read *model.Chunk) (string, error) {
+func (service *UploadService) Read(read *model.Chunk) (repository.RepositoryResponse, error) {
 	resp, err := service.repository.Read(read)
+	if err != nil {
+		panic(err)
+	}
 
 	file, err := resp.File.Open()
 	if err != nil {
@@ -68,12 +71,17 @@ func (service *UploadService) Read(read *model.Chunk) (string, error) {
 	}
 	defer file.Close()
 
-	readerToStdout(file, read.Offset, read.Limit)
+	// readerToStdout(file, read.Offset, read.Limit)
 
-	return "", err
+	response := repository.RepositoryResponse{
+		Success: true,
+		File:    readerToStdout(file, read.Offset, read.Limit),
+	}
+
+	return response, err
 }
 
-func readerToStdout(r multipart.File, offset int64, limit int64) {
+func readerToStdout(r multipart.File, offset int64, limit int64) []byte {
 	fmt.Printf("bytes=%d-%d", offset, limit)
 	buf := make([]byte, limit)
 	n, err := r.ReadAt(buf, offset)
@@ -81,4 +89,5 @@ func readerToStdout(r multipart.File, offset int64, limit int64) {
 		panic(err)
 	}
 	fmt.Println(string(buf[:n]))
+	return (buf[:n])
 }

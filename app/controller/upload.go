@@ -114,7 +114,7 @@ func (controller *UploadController) ReadTest(c *gin.Context) {
 		return
 	}
 
-	fmt.Println("File read successfully: ", reponse)
+	fmt.Println("File read successfully: ", reponse.File)
 	c.JSON(
 		http.StatusOK,
 		reponse,

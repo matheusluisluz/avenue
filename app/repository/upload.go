@@ -12,6 +12,7 @@ import (
 type RepositoryResponse struct {
 	Success bool   `json:"success"`
 	Id      string `json:"id"`
+	File    []byte `json:"file"`
 }
 
 type IRepository interface {
