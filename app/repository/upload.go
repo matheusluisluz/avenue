@@ -9,14 +9,8 @@ import (
 	"avenue/app/model"
 )
 
-type RepositoryResponse struct {
-	Success bool   `json:"success"`
-	Id      string `json:"id"`
-	File    []byte `json:"file"`
-}
-
 type IRepository interface {
-	Upload(ctx context.Context, file *model.Upload) (*RepositoryResponse, error)
+	Upload(ctx context.Context, file *model.Upload) (string, error)
 	Read(read *model.Chunk) (*model.Upload, error)
 }
 
@@ -30,17 +24,12 @@ func Execute() *UploadRepository {
 	}
 }
 
-func (repository *UploadRepository) Upload(ctx context.Context, file *model.Upload) (*RepositoryResponse, error) {
+func (repository *UploadRepository) Upload(ctx context.Context, file *model.Upload) (string, error) {
 	fmt.Println("file.ID: ", file.ID)
 	fmt.Println("file: ", file)
 	repository.store.Store(file.ID, file)
 
-	response := &RepositoryResponse{
-		Success: true,
-		Id:      file.ID,
-	}
-
-	return response, nil
+	return file.ID, nil
 }
 
 func (repository *UploadRepository) Read(read *model.Chunk) (*model.Upload, error) {

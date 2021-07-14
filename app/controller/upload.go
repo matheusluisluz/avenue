@@ -8,7 +8,6 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"avenue/app/model"
-	"avenue/app/repository"
 	"avenue/app/service"
 )
 
@@ -88,7 +87,7 @@ func (controller *UploadController) UploadTest(c *gin.Context) {
 	c.Header("Path", reponse.Id)
 	c.JSON(
 		http.StatusOK,
-		&repository.RepositoryResponse{Success: reponse.Success, Id: reponse.Id},
+		reponse,
 	)
 }
 
@@ -106,7 +105,7 @@ func (controller *UploadController) ReadTest(c *gin.Context) {
 		return
 	}
 
-	reponse, err := controller.service.Read(chunk)
+	response, err := controller.service.Read(chunk)
 
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
@@ -114,10 +113,10 @@ func (controller *UploadController) ReadTest(c *gin.Context) {
 		return
 	}
 
-	fmt.Println("File read successfully: ", reponse.File)
+	fmt.Println("File read successfully: ", response.Success)
 	c.JSON(
 		http.StatusOK,
-		reponse,
+		response,
 	)
 }
 

@@ -19,3 +19,8 @@ type UploadResponse struct {
 	Success bool   `json:"success"`
 	Id      string `json:"id"`
 }
+
+type ReadResponse struct {
+	Success bool   `json:"success"`
+	File    []byte `json:"file"`
+}

@@ -5,17 +5,17 @@ import (
 	"fmt"
 	"mime/multipart"
 
-	"avenue/app/model"
-	"avenue/app/repository"
-
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+
+	"avenue/app/model"
+	"avenue/app/repository"
 )
 
 type IService interface {
-	Upload(ctx context.Context, upload *model.Upload) (*repository.RepositoryResponse, error)
-	UploadTest(c *gin.Context, upload *model.Upload) (*repository.RepositoryResponse, error)
-	Read(read *model.Chunk) (repository.RepositoryResponse, error)
+	Upload(ctx context.Context, upload *model.Upload) (*model.UploadResponse, error)
+	UploadTest(c *gin.Context, upload *model.Upload) (*model.UploadResponse, error)
+	Read(read *model.Chunk) (*model.ReadResponse, error)
 }
 
 type UploadService struct {
@@ -30,36 +30,46 @@ func Execute(repository repository.IRepository) IService {
 	return service
 }
 
-func (service *UploadService) Upload(ctx context.Context, upload *model.Upload) (*repository.RepositoryResponse, error) {
+func (service *UploadService) Upload(ctx context.Context, upload *model.Upload) (*model.UploadResponse, error) {
 	id := uuid.New().String()
 	location := fmt.Sprintf("%s-%s", id, upload.FileName)
-	RepositoryResponse, err := service.repository.Upload(ctx, &model.Upload{
+	fileId, err := service.repository.Upload(ctx, &model.Upload{
 		Path:     location,
 		FileName: upload.FileName,
 		ID:       id,
 	})
 
-	return RepositoryResponse, err
+	response := &model.UploadResponse{
+		Success: true,
+		Id:      fileId,
+	}
+
+	return response, err
 }
 
-func (service *UploadService) UploadTest(c *gin.Context, upload *model.Upload) (*repository.RepositoryResponse, error) {
+func (service *UploadService) UploadTest(c *gin.Context, upload *model.Upload) (*model.UploadResponse, error) {
 	id := uuid.New().String()
 	dist := fmt.Sprintf("%s-%s", id, upload.FileName)
 	// if err := c.SaveUploadedFile(file, dist); err != nil {
 	// 	panic(err)
 	// }
 
-	RepositoryResponse, err := service.repository.Upload(c.Request.Context(), &model.Upload{
+	fileId, nil := service.repository.Upload(c.Request.Context(), &model.Upload{
 		Path:     dist,
 		FileName: upload.FileName,
 		ID:       id,
 		File:     upload.File,
 	})
 
-	return RepositoryResponse, err
+	response := &model.UploadResponse{
+		Success: true,
+		Id:      fileId,
+	}
+
+	return response, nil
 }
 
-func (service *UploadService) Read(read *model.Chunk) (repository.RepositoryResponse, error) {
+func (service *UploadService) Read(read *model.Chunk) (*model.ReadResponse, error) {
 	resp, err := service.repository.Read(read)
 	if err != nil {
 		panic(err)
@@ -71,9 +81,7 @@ func (service *UploadService) Read(read *model.Chunk) (repository.RepositoryResp
 	}
 	defer file.Close()
 
-	// readerToStdout(file, read.Offset, read.Limit)
-
-	response := repository.RepositoryResponse{
+	response := &model.ReadResponse{
 		Success: true,
 		File:    readerToStdout(file, read.Offset, read.Limit),
 	}
@@ -82,8 +90,10 @@ func (service *UploadService) Read(read *model.Chunk) (repository.RepositoryResp
 }
 
 func readerToStdout(r multipart.File, offset int64, limit int64) []byte {
-	fmt.Printf("bytes=%d-%d", offset, limit)
+	fmt.Println("offset: ", offset)
+	fmt.Println("limit: ", limit)
 	buf := make([]byte, limit)
+	fmt.Println("buf: ", buf)
 	n, err := r.ReadAt(buf, offset)
 	if err != nil {
 		panic(err)
