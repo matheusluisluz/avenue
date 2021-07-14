@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"mime/multipart"
 
 	"avenue/app/model"
 	"avenue/app/repository"
@@ -14,7 +15,7 @@ import (
 type IService interface {
 	Upload(ctx context.Context, upload *model.Upload) (*repository.RepositoryResponse, error)
 	UploadTest(c *gin.Context, upload *model.Upload) (*repository.RepositoryResponse, error)
-	Read(read *model.Chunk) (*model.Upload, error)
+	Read(read *model.Chunk) (string, error)
 }
 
 type UploadService struct {
@@ -52,12 +53,32 @@ func (service *UploadService) UploadTest(c *gin.Context, upload *model.Upload) (
 		Path:     dist,
 		FileName: upload.FileName,
 		ID:       id,
+		File:     upload.File,
 	})
 
 	return RepositoryResponse, err
 }
 
-func (service *UploadService) Read(read *model.Chunk) (*model.Upload, error) {
-	file, err := service.repository.Read(read)
-	return file, err
+func (service *UploadService) Read(read *model.Chunk) (string, error) {
+	resp, err := service.repository.Read(read)
+
+	file, err := resp.File.Open()
+	if err != nil {
+		panic(err)
+	}
+	defer file.Close()
+
+	readerToStdout(file, read.Offset, read.Limit)
+
+	return "", err
+}
+
+func readerToStdout(r multipart.File, offset int64, limit int64) {
+	fmt.Printf("bytes=%d-%d", offset, limit)
+	buf := make([]byte, limit)
+	n, err := r.ReadAt(buf, offset)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(string(buf[:n]))
 }

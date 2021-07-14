@@ -1,12 +1,12 @@
 package model
 
-import "io"
+import "mime/multipart"
 
 type Upload struct {
 	ID       string
 	FileName string
 	Path     string
-	File     io.Reader
+	File     *multipart.FileHeader
 }
 
 type Chunk struct {

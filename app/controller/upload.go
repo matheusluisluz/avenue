@@ -3,7 +3,6 @@ package controller
 import (
 	"fmt"
 	"net/http"
-	"os"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -33,16 +32,16 @@ func (controller *UploadController) Upload(c *gin.Context) {
 		return
 	}
 
-	headers, err := os.Open(file.Filename)
-	if err != nil {
-		c.String(http.StatusBadRequest, fmt.Sprintf("get form err: %s", err.Error()))
-		return
-	}
+	// headers, err := os.Open(file.Filename)
+	// if err != nil {
+	// 	c.String(http.StatusBadRequest, fmt.Sprintf("get form err: %s", err.Error()))
+	// 	return
+	// }
 
 	// id := uuid.New().String()
 
 	domain := &model.Upload{
-		File:     headers,
+		File:     file,
 		FileName: file.Filename,
 	}
 
@@ -75,7 +74,7 @@ func (controller *UploadController) UploadTest(c *gin.Context) {
 
 	upload := &model.Upload{
 		FileName: file.Filename,
-		File:     headers,
+		File:     file,
 	}
 
 	reponse, err := controller.service.UploadTest(c, upload)
