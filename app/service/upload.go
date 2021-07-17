@@ -75,15 +75,15 @@ func (service *UploadService) Read(read *model.Chunk) (*model.ReadResponse, erro
 		panic(err)
 	}
 
-	file, err := resp.File.Open()
-	if err != nil {
-		panic(err)
-	}
-	defer file.Close()
+	// file, err := resp.File.Read()
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// defer file.Close()
 
 	response := &model.ReadResponse{
 		Success: true,
-		File:    readerToStdout(file, read.Offset, read.Limit),
+		File:    resp,
 	}
 
 	return response, err
@@ -93,7 +93,6 @@ func readerToStdout(r multipart.File, offset int64, limit int64) []byte {
 	fmt.Println("offset: ", offset)
 	fmt.Println("limit: ", limit)
 	buf := make([]byte, limit)
-	fmt.Println("buf: ", buf)
 	n, err := r.ReadAt(buf, offset)
 	if err != nil {
 		panic(err)

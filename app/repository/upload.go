@@ -2,43 +2,51 @@ package repository
 
 import (
 	"context"
-	"errors"
 	"fmt"
-	"sync"
+	"io/ioutil"
+
+	"github.com/allegro/bigcache/v3"
 
 	"avenue/app/model"
 )
 
 type IRepository interface {
 	Upload(ctx context.Context, file *model.Upload) (string, error)
-	Read(read *model.Chunk) (*model.Upload, error)
+	Read(read *model.Chunk) ([]byte, error)
 }
 
 type UploadRepository struct {
-	store sync.Map
+	cache *bigcache.BigCache
 }
 
-func Execute() *UploadRepository {
+func Execute(config bigcache.Config) *UploadRepository {
+	cache, _ := bigcache.NewBigCache(config)
 	return &UploadRepository{
-		store: sync.Map{},
+		cache: cache,
 	}
 }
 
 func (repository *UploadRepository) Upload(ctx context.Context, file *model.Upload) (string, error) {
 	fmt.Println("file.ID: ", file.ID)
-	fmt.Println("file: ", file)
-	repository.store.Store(file.ID, file)
+	fmt.Println("file: ", file.File)
+	// repository.store.Store(file.ID, file)
+	b, err := ioutil.ReadAll(file.File)
+	if err != nil {
+		panic(err)
+	}
+	repository.cache.Set(file.ID, b)
 
 	return file.ID, nil
 }
 
-func (repository *UploadRepository) Read(read *model.Chunk) (*model.Upload, error) {
+func (repository *UploadRepository) Read(read *model.Chunk) ([]byte, error) {
 	fmt.Println("read.UploadID: ", read.UploadID)
-	file, ok := repository.store.Load(read.UploadID)
-	fmt.Println("file: ", file)
-	if !ok {
-		return nil, errors.New("File Not Found !!!")
+	// file, ok := repository.store.Get(read.UploadID)
+	// fmt.Println("file: ", file)
+	entry, err := repository.cache.Get(read.UploadID)
+	if err != nil {
+		panic(err)
 	}
 
-	return file.(*model.Upload), nil
+	return entry, nil
 }

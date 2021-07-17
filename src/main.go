@@ -3,7 +3,9 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
+	"time"
 
+	"github.com/allegro/bigcache"
 	"github.com/gin-gonic/gin"
 
 	"avenue/app/controller"
@@ -55,8 +57,9 @@ func main() {
 	// router.POST("/", PostHomePage)
 	// router.GET("/query", QueryString)
 	// router.GET("/path/:name/:age", PathParams)
+	cacheConfig := bigcache.DefaultConfig(10 * time.Minute)
 
-	repository := repository.Execute()
+	repository := repository.Execute(cacheConfig)
 	service := service.Execute(repository)
 	controller := controller.Execute(service)
 

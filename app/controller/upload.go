@@ -23,39 +23,39 @@ func Execute(service service.IService) *UploadController {
 	return controller
 }
 
-func (controller *UploadController) Upload(c *gin.Context) {
-	file, err := c.FormFile("file")
-	fmt.Sprintln("get form err: ", file)
-	if err != nil {
-		c.String(http.StatusBadRequest, fmt.Sprintf("get form err: %s", err.Error()))
-		return
-	}
+// func (controller *UploadController) Upload(c *gin.Context) {
+// 	file, err := c.FormFile("file")
+// 	fmt.Sprintln("get form err: ", file)
+// 	if err != nil {
+// 		c.String(http.StatusBadRequest, fmt.Sprintf("get form err: %s", err.Error()))
+// 		return
+// 	}
 
-	// headers, err := os.Open(file.Filename)
-	// if err != nil {
-	// 	c.String(http.StatusBadRequest, fmt.Sprintf("get form err: %s", err.Error()))
-	// 	return
-	// }
+// 	// headers, err := os.Open(file.Filename)
+// 	// if err != nil {
+// 	// 	c.String(http.StatusBadRequest, fmt.Sprintf("get form err: %s", err.Error()))
+// 	// 	return
+// 	// }
 
-	// id := uuid.New().String()
+// 	// id := uuid.New().String()
 
-	domain := &model.Upload{
-		File:     file,
-		FileName: file.Filename,
-	}
+// 	domain := &model.Upload{
+// 		File:     file,
+// 		FileName: file.Filename,
+// 	}
 
-	reponse, err := controller.service.Upload(c.Request.Context(), domain)
+// 	reponse, err := controller.service.Upload(c.Request.Context(), domain)
 
-	if err != nil {
-		c.Status(http.StatusInternalServerError)
-		return
-	}
+// 	if err != nil {
+// 		c.Status(http.StatusInternalServerError)
+// 		return
+// 	}
 
-	c.Header("Path", reponse.Id)
-	c.Status(http.StatusCreated)
+// 	c.Header("Path", reponse.Id)
+// 	c.Status(http.StatusCreated)
 
-	c.String(http.StatusOK, fmt.Sprintf("File %s uploaded successfully", file.Filename))
-}
+// 	c.String(http.StatusOK, fmt.Sprintf("File %s uploaded successfully", file.Filename))
+// }
 
 func (controller *UploadController) UploadTest(c *gin.Context) {
 	file, err := c.FormFile("file")
@@ -73,7 +73,7 @@ func (controller *UploadController) UploadTest(c *gin.Context) {
 
 	upload := &model.Upload{
 		FileName: file.Filename,
-		File:     file,
+		File:     headers,
 	}
 
 	reponse, err := controller.service.UploadTest(c, upload)
@@ -125,6 +125,6 @@ func (controller *UploadController) Routes(engine *gin.Engine) {
 	engine.POST("/test-upload", controller.UploadTest)
 	engine.GET("/test-upload", controller.ReadTest)
 
-	upload := engine.Group("upload")
-	upload.POST("/", controller.Upload)
+	// upload := engine.Group("upload")
+	// upload.POST("/", controller.Upload)
 }
