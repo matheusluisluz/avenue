@@ -3,7 +3,6 @@ package repository
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 
 	"github.com/allegro/bigcache/v3"
 
@@ -27,13 +26,16 @@ func Execute(config bigcache.Config) *UploadRepository {
 }
 
 func (repository *UploadRepository) Upload(ctx context.Context, file *model.Upload) (string, error) {
+	fmt.Println("file: ", file)
 	fmt.Println("file.ID: ", file.ID)
-	fmt.Println("file: ", file.File)
-	b, err := ioutil.ReadAll(file.File)
-	if err != nil {
-		panic(err)
-	}
-	repository.cache.Set(file.ID, b)
+	fmt.Println("file.File: ", file.File)
+	pointer := fmt.Sprintf("%v", file)
+	fmt.Println("file: ", pointer)
+	// b, err := ioutil.ReadAll(file.File)
+	// if err != nil {
+	// 	panic(err)
+	// }
+	repository.cache.Set(file.ID, []byte(pointer))
 
 	return file.ID, nil
 }
@@ -44,6 +46,12 @@ func (repository *UploadRepository) Read(read *model.Chunk) ([]byte, error) {
 	if err != nil {
 		panic(err)
 	}
-
+	fmt.Println("entry: ", string(entry))
+	pointer := string(entry)
+	// b, err := ioutil.ReadAll(file.File)
+	// if err != nil {
+	// 	panic(err)
+	// }
+	fmt.Println("pointer: ", pointer)
 	return entry, nil
 }
