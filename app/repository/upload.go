@@ -29,7 +29,6 @@ func Execute(config bigcache.Config) *UploadRepository {
 func (repository *UploadRepository) Upload(ctx context.Context, file *model.Upload) (string, error) {
 	fmt.Println("file.ID: ", file.ID)
 	fmt.Println("file: ", file.File)
-	// repository.store.Store(file.ID, file)
 	b, err := ioutil.ReadAll(file.File)
 	if err != nil {
 		panic(err)
@@ -41,8 +40,6 @@ func (repository *UploadRepository) Upload(ctx context.Context, file *model.Uplo
 
 func (repository *UploadRepository) Read(read *model.Chunk) ([]byte, error) {
 	fmt.Println("read.UploadID: ", read.UploadID)
-	// file, ok := repository.store.Get(read.UploadID)
-	// fmt.Println("file: ", file)
 	entry, err := repository.cache.Get(read.UploadID)
 	if err != nil {
 		panic(err)

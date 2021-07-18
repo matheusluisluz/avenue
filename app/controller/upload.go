@@ -84,7 +84,6 @@ func (controller *UploadController) UploadTest(c *gin.Context) {
 	}
 
 	fmt.Println("File uploaded successfully: ", file.Filename)
-	c.Header("Path", reponse.Id)
 	c.JSON(
 		http.StatusOK,
 		reponse,
