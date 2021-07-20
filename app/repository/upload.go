@@ -30,6 +30,7 @@ func (repository *UploadRepository) Upload(ctx context.Context, file *model.Uplo
 	fmt.Println("file: ", file)
 	fmt.Println("file.ID: ", file.ID)
 	// fmt.Println("file.File: ", file.File)
+	//TODO build a struct with bytes of file and store it
 	pointer := fmt.Sprintf("%v", file)
 	fmt.Println("file: ", pointer)
 	b, err := ioutil.ReadAll(file.File)
