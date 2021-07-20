@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
 
 	"github.com/allegro/bigcache/v3"
 
@@ -28,14 +29,15 @@ func Execute(config bigcache.Config) *UploadRepository {
 func (repository *UploadRepository) Upload(ctx context.Context, file *model.Upload) (string, error) {
 	fmt.Println("file: ", file)
 	fmt.Println("file.ID: ", file.ID)
-	fmt.Println("file.File: ", file.File)
+	// fmt.Println("file.File: ", file.File)
 	pointer := fmt.Sprintf("%v", file)
 	fmt.Println("file: ", pointer)
-	// b, err := ioutil.ReadAll(file.File)
-	// if err != nil {
-	// 	panic(err)
-	// }
-	repository.cache.Set(file.ID, []byte(pointer))
+	b, err := ioutil.ReadAll(file.File)
+	if err != nil {
+		panic(err)
+	}
+	// b, _ := json.Marshal(readFile)
+	repository.cache.Set(file.ID, b)
 
 	return file.ID, nil
 }
@@ -46,12 +48,13 @@ func (repository *UploadRepository) Read(read *model.Chunk) ([]byte, error) {
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println("entry: ", string(entry))
-	pointer := string(entry)
+	// fmt.Println("entry: ", entry)
 	// b, err := ioutil.ReadAll(file.File)
 	// if err != nil {
 	// 	panic(err)
 	// }
-	fmt.Println("pointer: ", pointer)
+	// var languages model.Upload
+	// json.Unmarshal(entry, &languages)
+	// fmt.Println("json.Unmarshal(entry, &languages): ", languages)
 	return entry, nil
 }

@@ -75,11 +75,18 @@ func (service *UploadService) Read(read *model.Chunk) (*model.ReadResponse, erro
 		panic(err)
 	}
 
+	fmt.Println("UploadService: ", resp)
 	// file, err := resp.File.Read()
 	// if err != nil {
 	// 	panic(err)
 	// }
 	// defer file.Close()
+
+	// headers, err := resp.File.Open()
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// defer headers.Close()
 
 	response := &model.ReadResponse{
 		Success: true,
