@@ -1,7 +1,9 @@
 package controller
 
 import (
+	"errors"
 	"fmt"
+	"mime/multipart"
 	"net/http"
 	"strconv"
 
@@ -23,40 +25,6 @@ func Execute(service service.IService) *UploadController {
 	return controller
 }
 
-// func (controller *UploadController) Upload(c *gin.Context) {
-// 	file, err := c.FormFile("file")
-// 	fmt.Sprintln("get form err: ", file)
-// 	if err != nil {
-// 		c.String(http.StatusBadRequest, fmt.Sprintf("get form err: %s", err.Error()))
-// 		return
-// 	}
-
-// 	// headers, err := os.Open(file.Filename)
-// 	// if err != nil {
-// 	// 	c.String(http.StatusBadRequest, fmt.Sprintf("get form err: %s", err.Error()))
-// 	// 	return
-// 	// }
-
-// 	// id := uuid.New().String()
-
-// 	domain := &model.Upload{
-// 		File:     file,
-// 		FileName: file.Filename,
-// 	}
-
-// 	reponse, err := controller.service.Upload(c.Request.Context(), domain)
-
-// 	if err != nil {
-// 		c.Status(http.StatusInternalServerError)
-// 		return
-// 	}
-
-// 	c.Header("Path", reponse.Id)
-// 	c.Status(http.StatusCreated)
-
-// 	c.String(http.StatusOK, fmt.Sprintf("File %s uploaded successfully", file.Filename))
-// }
-
 func (controller *UploadController) UploadTest(c *gin.Context) {
 	file, err := c.FormFile("file")
 	if err != nil {
@@ -64,19 +32,21 @@ func (controller *UploadController) UploadTest(c *gin.Context) {
 		return
 	}
 
-	headers, err := file.Open()
-	if err != nil {
-		c.String(http.StatusBadRequest, fmt.Sprintf("get form err: %s", err.Error()))
-		return
-	}
-	defer headers.Close()
+	// controller.fsOrMemory(file, c)
 
-	upload := &model.Upload{
-		FileName: file.Filename,
-		File:     headers,
-	}
+	// headers, err := file.Open()
+	// if err != nil {
+	// 	c.String(http.StatusBadRequest, fmt.Sprintf("get form err: %s", err.Error()))
+	// 	return
+	// }
+	// defer headers.Close()
 
-	reponse, err := controller.service.UploadTest(c, upload)
+	// upload := &model.Upload{
+	// 	FileName: file.Filename,
+	// 	File:     headers,
+	// }
+
+	reponse, err := controller.fsOrMemory(file, c)
 
 	if err != nil {
 		c.Status(http.StatusInternalServerError)
@@ -126,4 +96,47 @@ func (controller *UploadController) Routes(engine *gin.Engine) {
 
 	// upload := engine.Group("upload")
 	// upload.POST("/", controller.Upload)
+}
+
+func (controller *UploadController) UploadMemory(file *multipart.FileHeader, c *gin.Context) (*model.UploadResponse, error) {
+	headers, err := file.Open()
+	if err != nil {
+		c.String(http.StatusBadRequest, fmt.Sprintf("get form err: %s", err.Error()))
+		return nil, err
+	}
+	defer headers.Close()
+
+	upload := &model.Upload{
+		FileName: file.Filename,
+		File:     headers,
+	}
+
+	return controller.service.UploadTest(c, upload)
+}
+
+func (controller *UploadController) UploadFs(file *multipart.FileHeader, c *gin.Context) (*model.UploadResponse, error) {
+	headers, err := file.Open()
+	if err != nil {
+		c.String(http.StatusBadRequest, fmt.Sprintf("get form err: %s", err.Error()))
+		return nil, err
+	}
+	defer headers.Close()
+
+	upload := &model.Upload{
+		FileName: file.Filename,
+		Header:   *file,
+		File:     headers,
+	}
+
+	return controller.service.Upload(c, upload)
+}
+
+func (controller *UploadController) fsOrMemory(file *multipart.FileHeader, c *gin.Context) (*model.UploadResponse, error) {
+	switch "fs" {
+	case "fs":
+		return controller.UploadFs(file, c)
+	case "mem":
+		return controller.UploadMemory(file, c)
+	}
+	return nil, errors.New("backend not identified")
 }

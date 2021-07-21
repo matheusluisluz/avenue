@@ -7,6 +7,7 @@ type Upload struct {
 	FileName string
 	Path     string
 	File     multipart.File
+	Header   multipart.FileHeader
 }
 
 type Chunk struct {

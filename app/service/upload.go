@@ -1,7 +1,6 @@
 package service
 
 import (
-	"context"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -16,7 +15,7 @@ import (
 )
 
 type IService interface {
-	Upload(ctx context.Context, upload *model.Upload) (*model.UploadResponse, error)
+	Upload(c *gin.Context, upload *model.Upload) (*model.UploadResponse, error)
 	UploadTest(c *gin.Context, upload *model.Upload) (*model.UploadResponse, error)
 	Read(read *model.Chunk) (*model.ReadResponse, error)
 }
@@ -33,13 +32,19 @@ func Execute(repository repository.IRepository) IService {
 	return service
 }
 
-func (service *UploadService) Upload(ctx context.Context, upload *model.Upload) (*model.UploadResponse, error) {
+func (service *UploadService) Upload(c *gin.Context, upload *model.Upload) (*model.UploadResponse, error) {
 	id := uuid.New().String()
-	location := fmt.Sprintf("%s-%s", id, upload.FileName)
-	fileId, err := service.repository.Upload(ctx, &model.Upload{
-		Path:     location,
+	dist := fmt.Sprintf("%s-%s", id, upload.FileName)
+
+	if err := c.SaveUploadedFile(&upload.Header, dist); err != nil {
+		panic(err)
+	}
+	fileId, err := service.repository.Upload(c.Request.Context(), &model.Upload{
+		Path:     dist,
 		FileName: upload.FileName,
 		ID:       id,
+		File:     upload.File,
+		Header:   upload.Header,
 	})
 
 	response := &model.UploadResponse{
@@ -53,9 +58,6 @@ func (service *UploadService) Upload(ctx context.Context, upload *model.Upload) 
 func (service *UploadService) UploadTest(c *gin.Context, upload *model.Upload) (*model.UploadResponse, error) {
 	id := uuid.New().String()
 	dist := fmt.Sprintf("%s-%s", id, upload.FileName)
-	// if err := c.SaveUploadedFile(file, dist); err != nil {
-	// 	panic(err)
-	// }
 
 	fileId, nil := service.repository.Upload(c.Request.Context(), &model.Upload{
 		Path:     dist,
