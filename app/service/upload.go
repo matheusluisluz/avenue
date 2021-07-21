@@ -3,7 +3,10 @@ package service
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
+	"log"
 	"mime/multipart"
+	"os"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -70,12 +73,12 @@ func (service *UploadService) UploadTest(c *gin.Context, upload *model.Upload) (
 }
 
 func (service *UploadService) Read(read *model.Chunk) (*model.ReadResponse, error) {
-	resp, err := service.repository.Read(read)
+	file, err := service.repository.Read(read)
 	if err != nil {
 		panic(err)
 	}
 
-	fmt.Println("UploadService: ", resp)
+	fmt.Println("UploadService: ")
 	// file, err := resp.File.Read()
 	// if err != nil {
 	// 	panic(err)
@@ -88,9 +91,26 @@ func (service *UploadService) Read(read *model.Chunk) (*model.ReadResponse, erro
 	// }
 	// defer headers.Close()
 
+	fileSufix := fmt.Sprint(read.UploadID, "-nasdaq_symbols.csv")
+	tmpfile, err := ioutil.TempFile("", fileSufix)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	defer os.Remove(tmpfile.Name())
+
+	if _, err := tmpfile.Write(file); err != nil {
+		tmpfile.Close()
+		log.Fatal(err)
+	}
+
 	response := &model.ReadResponse{
 		Success: true,
-		File:    resp,
+		File:    readerToStdout(tmpfile, read.Offset, read.Limit),
+	}
+
+	if err := tmpfile.Close(); err != nil {
+		log.Fatal(err)
 	}
 
 	return response, err
