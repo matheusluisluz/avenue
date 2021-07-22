@@ -9,17 +9,20 @@ import (
 
 	"github.com/gin-gonic/gin"
 
+	"avenue/app/config"
 	"avenue/app/model"
 	"avenue/app/service"
 )
 
 type UploadController struct {
 	service service.IService
+	config  config.Configuration
 }
 
-func Execute(service service.IService) *UploadController {
+func Execute(service service.IService, config config.Configuration) *UploadController {
 	controller := &UploadController{
 		service: service,
+		config:  config,
 	}
 
 	return controller
@@ -132,10 +135,10 @@ func (controller *UploadController) UploadFs(file *multipart.FileHeader, c *gin.
 }
 
 func (controller *UploadController) fsOrMemory(file *multipart.FileHeader, c *gin.Context) (*model.UploadResponse, error) {
-	switch "fs" {
+	switch controller.config.Upload {
 	case "fs":
 		return controller.UploadFs(file, c)
-	case "mem":
+	case "memory":
 		return controller.UploadMemory(file, c)
 	}
 	return nil, errors.New("backend not identified")
