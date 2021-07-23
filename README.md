@@ -1,5 +1,5 @@
 # **Avenue - Upload File**
-> A aplicação realiza o upload de arquivos 
+> A aplicação realiza o upload e donwload de arquivos 
 ## Instalação e execução da aplicação
 -----
 ### Testes
@@ -32,5 +32,5 @@ Collection no Postman podem ser encontradas aqui:
 
 > Lista com todas as configurações possíveis e seus defaults caso existam
 
-- **PORT**: Porta na qual o servidor web ficará disponível (valor default: 3006);
-- **UPLOAD**: Salvo o arquivo na memoria ou no file system (valor: "fs" ou "memory");
+- **PORT**: Porta na qual o servidor web ficará disponível (valor default: 4545);
+- **UPLOAD**: Realiza o upload do arquivo na memoria ou no file system (valor: "fs" ou "memory");
