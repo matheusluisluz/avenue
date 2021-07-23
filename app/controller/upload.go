@@ -28,7 +28,7 @@ func Execute(service service.IService, config config.Configuration) *UploadContr
 	return controller
 }
 
-func (controller *UploadController) UploadTest(c *gin.Context) {
+func (controller *UploadController) Upload(c *gin.Context) {
 	file, err := c.FormFile("file")
 	if err != nil {
 		c.String(http.StatusBadRequest, fmt.Sprintf("get form err: %s", err.Error()))
@@ -49,7 +49,7 @@ func (controller *UploadController) UploadTest(c *gin.Context) {
 	)
 }
 
-func (controller *UploadController) ReadTest(c *gin.Context) {
+func (controller *UploadController) Read(c *gin.Context) {
 	offset, _ := strconv.ParseInt(c.Query("offset"), 10, 64)
 	limit, _ := strconv.ParseInt(c.Query("limit"), 10, 64)
 	chunk := &model.Chunk{
@@ -80,8 +80,8 @@ func (controller *UploadController) ReadTest(c *gin.Context) {
 
 func (controller *UploadController) Routes(engine *gin.Engine) {
 	engine.MaxMultipartMemory = 8 << 20
-	engine.POST("/test-upload", controller.UploadTest)
-	engine.GET("/test-upload", controller.ReadTest)
+	engine.POST("/upload", controller.Upload)
+	engine.GET("/upload", controller.Read)
 }
 
 func (controller *UploadController) UploadMemory(file *multipart.FileHeader, c *gin.Context) (*model.UploadResponse, error) {
