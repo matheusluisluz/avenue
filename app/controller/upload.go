@@ -35,20 +35,6 @@ func (controller *UploadController) UploadTest(c *gin.Context) {
 		return
 	}
 
-	// controller.fsOrMemory(file, c)
-
-	// headers, err := file.Open()
-	// if err != nil {
-	// 	c.String(http.StatusBadRequest, fmt.Sprintf("get form err: %s", err.Error()))
-	// 	return
-	// }
-	// defer headers.Close()
-
-	// upload := &model.Upload{
-	// 	FileName: file.Filename,
-	// 	File:     headers,
-	// }
-
 	reponse, err := controller.fsOrMemory(file, c)
 
 	if err != nil {
@@ -96,9 +82,6 @@ func (controller *UploadController) Routes(engine *gin.Engine) {
 	engine.MaxMultipartMemory = 8 << 20
 	engine.POST("/test-upload", controller.UploadTest)
 	engine.GET("/test-upload", controller.ReadTest)
-
-	// upload := engine.Group("upload")
-	// upload.POST("/", controller.Upload)
 }
 
 func (controller *UploadController) UploadMemory(file *multipart.FileHeader, c *gin.Context) (*model.UploadResponse, error) {
@@ -114,7 +97,7 @@ func (controller *UploadController) UploadMemory(file *multipart.FileHeader, c *
 		File:     headers,
 	}
 
-	return controller.service.UploadTest(c, upload)
+	return controller.service.UploadMem(c, upload)
 }
 
 func (controller *UploadController) UploadFs(file *multipart.FileHeader, c *gin.Context) (*model.UploadResponse, error) {
@@ -131,7 +114,7 @@ func (controller *UploadController) UploadFs(file *multipart.FileHeader, c *gin.
 		File:     headers,
 	}
 
-	return controller.service.Upload(c, upload)
+	return controller.service.UploadFs(c, upload)
 }
 
 func (controller *UploadController) fsOrMemory(file *multipart.FileHeader, c *gin.Context) (*model.UploadResponse, error) {

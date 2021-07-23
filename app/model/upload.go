@@ -1,12 +1,15 @@
 package model
 
-import "mime/multipart"
+import (
+	"io"
+	"mime/multipart"
+)
 
 type Upload struct {
 	ID       string
 	FileName string
 	Path     string
-	File     multipart.File
+	File     io.Reader
 	Header   multipart.FileHeader
 }
 

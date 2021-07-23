@@ -1,8 +1,10 @@
 package service
 
 import (
+	"bytes"
 	"context"
-	"mime/multipart"
+	"fmt"
+	"net/http/httptest"
 	"testing"
 
 	"github.com/gin-gonic/gin"
@@ -14,15 +16,19 @@ import (
 	"avenue/app/repository"
 )
 
+type GinMock struct {
+	mock.Mock
+}
+
 type UploadServiceTestSuite struct {
 	suite.Suite
 
 	ctx        context.Context
 	c          *gin.Context
+	r          GinMock
 	assert     *assert.Assertions
 	repository *repository.MockUploadRepository
-	file       multipart.File
-	service    UploadService
+	service    IService
 }
 
 func TestUploadServiceTestSuite(t *testing.T) {
@@ -32,9 +38,11 @@ func TestUploadServiceTestSuite(t *testing.T) {
 func (s *UploadServiceTestSuite) SetupTest() {
 	s.ctx = context.Background()
 	s.assert = assert.New(s.T())
+	s.c, _ = gin.CreateTestContext(httptest.NewRecorder())
+	s.r = GinMock{}
 	s.repository = &repository.MockUploadRepository{}
-	s.service = UploadService(
-		s.service,
+	s.service = Execute(
+		s.repository,
 	)
 }
 
@@ -42,18 +50,19 @@ func (s *UploadServiceTestSuite) TearDownTest() {
 	s.repository.AssertExpectations(s.T())
 }
 
-func (s *UploadServiceTestSuite) TestUpload() {
-
+func (s *UploadServiceTestSuite) TestUploadMem() {
+	buffer := new(bytes.Buffer)
 	upload := &model.Upload{
-		FileName: "file.txt",
+		FileName: "file.cvs",
+		File:     buffer,
 	}
 
 	s.repository.
-		On("Upload", s.c, mock.AnythingOfType("*domain.Upload")).
-		Return("123", nil)
+		On("Upload", mock.AnythingOfType("*model.Upload")).
+		Return("asd", nil)
 
-	result, _ := s.service.Upload(s.c, upload)
-
-	// s.assert.NoError(err)
+	result, err := s.service.UploadMem(s.c, upload)
+	fmt.Println("result: ", result)
+	s.assert.NoError(err)
 	s.assert.Equal(result.Success, true)
 }

@@ -1,7 +1,6 @@
 package repository
 
 import (
-	"context"
 	"fmt"
 	"io/ioutil"
 
@@ -15,7 +14,7 @@ var (
 )
 
 type IRepository interface {
-	Upload(ctx context.Context, file *model.Upload) (string, error)
+	Upload(file *model.Upload) (string, error)
 	Read(read *model.Chunk) ([]byte, error)
 }
 
@@ -30,7 +29,7 @@ func Execute(config bigcache.Config) *UploadRepository {
 	}
 }
 
-func (repository *UploadRepository) Upload(ctx context.Context, file *model.Upload) (string, error) {
+func (repository *UploadRepository) Upload(file *model.Upload) (string, error) {
 	fmt.Println("file.ID: ", file.ID)
 	b, err := ioutil.ReadAll(file.File)
 	if err != nil {
@@ -44,7 +43,7 @@ func (repository *UploadRepository) Read(read *model.Chunk) ([]byte, error) {
 	fmt.Println("read.UploadID: ", read.UploadID)
 	entry, err := repository.cache.Get(read.UploadID)
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 	return entry, nil
 }

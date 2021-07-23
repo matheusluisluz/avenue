@@ -2,7 +2,6 @@ package repository
 
 import (
 	"avenue/app/model"
-	"context"
 
 	"github.com/stretchr/testify/mock"
 )
@@ -19,8 +18,8 @@ func (m *MockUploadRepository) Read(read *model.Chunk) ([]byte, error) {
 	return upload, args.Error(1)
 }
 
-func (m *MockUploadRepository) Upload(ctx context.Context, file *model.Upload) (string, error) {
-	args := m.Called(ctx, file)
+func (m *MockUploadRepository) Upload(file *model.Upload) (string, error) {
+	args := m.Called(file)
 
 	return args.String(0), args.Error(1)
 }

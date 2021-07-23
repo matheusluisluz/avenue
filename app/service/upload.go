@@ -15,8 +15,8 @@ import (
 )
 
 type IService interface {
-	Upload(c *gin.Context, upload *model.Upload) (*model.UploadResponse, error)
-	UploadTest(c *gin.Context, upload *model.Upload) (*model.UploadResponse, error)
+	UploadFs(c *gin.Context, upload *model.Upload) (*model.UploadResponse, error)
+	UploadMem(c *gin.Context, upload *model.Upload) (*model.UploadResponse, error)
 	Read(read *model.Chunk) (*model.ReadResponse, error)
 }
 
@@ -32,14 +32,14 @@ func Execute(repository repository.IRepository) IService {
 	return service
 }
 
-func (service *UploadService) Upload(c *gin.Context, upload *model.Upload) (*model.UploadResponse, error) {
+func (service *UploadService) UploadFs(c *gin.Context, upload *model.Upload) (*model.UploadResponse, error) {
 	id := uuid.New().String()
 	dist := fmt.Sprintf("%s-%s", id, upload.FileName)
 
 	if err := c.SaveUploadedFile(&upload.Header, dist); err != nil {
 		panic(err)
 	}
-	fileId, err := service.repository.Upload(c.Request.Context(), &model.Upload{
+	fileId, err := service.repository.Upload(&model.Upload{
 		Path:     dist,
 		FileName: upload.FileName,
 		ID:       id,
@@ -55,11 +55,11 @@ func (service *UploadService) Upload(c *gin.Context, upload *model.Upload) (*mod
 	return response, err
 }
 
-func (service *UploadService) UploadTest(c *gin.Context, upload *model.Upload) (*model.UploadResponse, error) {
+func (service *UploadService) UploadMem(c *gin.Context, upload *model.Upload) (*model.UploadResponse, error) {
 	id := uuid.New().String()
 	dist := fmt.Sprintf("%s-%s", id, upload.FileName)
 
-	fileId, nil := service.repository.Upload(c.Request.Context(), &model.Upload{
+	fileId, nil := service.repository.Upload(&model.Upload{
 		Path:     dist,
 		FileName: upload.FileName,
 		ID:       id,
